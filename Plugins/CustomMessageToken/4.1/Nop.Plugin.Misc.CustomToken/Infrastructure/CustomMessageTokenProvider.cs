@@ -188,7 +188,7 @@ namespace Nop.Plugin.Misc.CustomToken.Infrastructure
             allowedTokens.AddRange(additionTokens.AdditionTokens);
 
             // add our custom token
-            allowedTokens.Add("Custom.Message.Token.CallForInfo");
+            allowedTokens.Add("%Custom.Message.Token.CallForInfo%");
 
             return allowedTokens.Distinct();
         }

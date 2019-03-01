@@ -24,6 +24,7 @@ using Nop.Services.Stores;
 using Nop.Services.Vendors;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Nop.Plugin.Misc.CustomToken.Infrastructure
@@ -153,7 +154,7 @@ namespace Nop.Plugin.Misc.CustomToken.Infrastructure
         /// <summary>
         /// Implement our own AddOrderTokens to the MessageTokenProvider class
         /// This allows to create own Tokens for the message templates
-        /// We're going to add a token for replacing the Burkhart Status Website
+        /// We're going to add a token for replacing the Call for info field
         /// </summary>
         /// <param name="tokens"></param>
         /// <param name="order"></param>
@@ -169,6 +170,27 @@ namespace Nop.Plugin.Misc.CustomToken.Infrastructure
             tokens.Add(new Token("Custom.Message.Token.CallForInfo", callForInformation, true));
 
             base.AddOrderTokens(tokens, order, languageId, vendorId);
+        }
+
+        /// <summary>
+        /// Get collection of allowed (supported) message tokens
+        /// </summary>
+        /// <param name="tokenGroups">Collection of token groups; pass null to get all available tokens</param>
+        /// <returns>Collection of allowed message tokens</returns>
+        public override IEnumerable<string> GetListOfAllowedTokens(IEnumerable<string> tokenGroups = null)
+        {
+            var additionTokens = new AdditionTokensAddedEvent();
+            _eventPublisher.Publish(additionTokens);
+
+            var allowedTokens = AllowedTokens.Where(x => tokenGroups == null || tokenGroups.Contains(x.Key))
+                .SelectMany(x => x.Value).ToList();
+
+            allowedTokens.AddRange(additionTokens.AdditionTokens);
+
+            // add our custom token
+            allowedTokens.Add("Custom.Message.Token.CallForInfo");
+
+            return allowedTokens.Distinct();
         }
 
         #endregion
